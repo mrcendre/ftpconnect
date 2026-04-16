@@ -24,6 +24,22 @@ class FTPSocket {
   /// Supported types are: [TransferType.auto], [TransferType.ascii], [TransferType.binary],
   TransferType get transferType => _transferType;
 
+  Future<Socket> connectDataSocket(int port) {
+    if (usesSecureDataConnection) {
+      return SecureSocket.connect(
+        host,
+        port,
+        timeout: Duration(seconds: timeout),
+      );
+    }
+
+    return Socket.connect(
+      host,
+      port,
+      timeout: Duration(seconds: timeout),
+    );
+  }
+
   /// Read the FTP Server response from the Stream
   ///
   /// Blocks until data is received!

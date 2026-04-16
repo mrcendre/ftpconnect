@@ -77,8 +77,7 @@ class FTPFile {
     // Data Transfer Socket
     int lPort = Utils.parsePort(response.message, _socket.supportIPV6);
     _socket.logger.log('Opening DataSocket to Port $lPort');
-    final Socket dataSocket = await Socket.connect(_socket.host, lPort,
-        timeout: Duration(seconds: _socket.timeout));
+    final Socket dataSocket = await _socket.connectDataSocket(lPort);
     // Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished
@@ -142,7 +141,7 @@ class FTPFile {
     // Data Transfer Socket
     int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
     _socket.logger.log('Opening DataSocket to Port $iPort');
-    final Socket dataSocket = await Socket.connect(_socket.host, iPort);
+    final Socket dataSocket = await _socket.connectDataSocket(iPort);
     //Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished

@@ -55,8 +55,7 @@ class FTPDirectory {
 
     // Data transfer socket
     int iPort = Utils.parsePort(response.message, _socket.supportIPV6);
-    Socket dataSocket = await Socket.connect(_socket.host, iPort,
-        timeout: Duration(seconds: _socket.timeout));
+    Socket dataSocket = await _socket.connectDataSocket(iPort);
     //Test if second socket connection accepted or not
     response = await _socket.readResponse();
     //some server return two lines 125 and 226 for transfer finished
