@@ -15,6 +15,7 @@ class FTPSocket {
   TransferMode transferMode = TransferMode.passive;
   TransferType _transferType = TransferType.auto;
   ListCommand listCommand = ListCommand.mlsd;
+  DataConnectionProtection dataConnectionProtection = DataConnectionProtection.protected;
   bool supportIPV6 = false;
 
   FTPSocket(this.host, this.port, this.securityType, this.logger, this.timeout);
@@ -23,6 +24,9 @@ class FTPSocket {
   ///
   /// Supported types are: [TransferType.auto], [TransferType.ascii], [TransferType.binary],
   TransferType get transferType => _transferType;
+
+  bool get usesSecureDataConnection =>
+      securityType != SecurityType.ftp && dataConnectionProtection == DataConnectionProtection.protected;
 
   Future<Socket> connectDataSocket(int port) {
     if (usesSecureDataConnection) {
@@ -149,7 +153,7 @@ class FTPSocket {
 
     if ([SecurityType.ftpes, SecurityType.ftps].contains(securityType)) {
       await sendCommand('PBSZ 0');
-      await sendCommand('PROT P');
+      await sendCommand('PROT ${dataConnectionProtection.commandValue}');
     }
 
     // Send Username

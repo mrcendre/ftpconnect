@@ -150,6 +150,18 @@ ftpConnect.deleteFile('test2.zip');
 |`securityType`| FTP/FTPES/FTPS default FTP                            |
 |`timeout`| Timeout in seconds to wait for responses (Defaults to 30) |
 
+For secured sessions, the data channel protection defaults to `PROT P`. If your FTPES server requires a clear data channel, set it explicitly before listing, uploading, or downloading:
+
+```dart
+final ftp = FTPConnect(
+  'example.com',
+  user: 'user',
+  pass: 'password',
+  securityType: SecurityType.ftpes,
+)
+  ..dataConnectionProtection = DataConnectionProtection.clear;
+```
+
 #more details [here](https://pub.dev/documentation/ftpconnect/latest/ftpconnect/ftpconnect-library.html)
 
 # [View more Examples](https://github.com/salim-lachdhaf/dartFTP/tree/master/example)

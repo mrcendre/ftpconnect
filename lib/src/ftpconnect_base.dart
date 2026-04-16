@@ -51,6 +51,10 @@ class FTPConnect {
     _socket.listCommand = pListCommand;
   }
 
+  set dataConnectionProtection(DataConnectionProtection pDataConnectionProtection) {
+    _socket.dataConnectionProtection = pDataConnectionProtection;
+  }
+
   set supportIPV6(bool pSupportIPV6) => _socket.supportIPV6 = pSupportIPV6;
 
   /// Set current transfer type of connection
@@ -299,8 +303,14 @@ enum TransferType { auto, ascii, binary }
 
 enum TransferMode { active, passive }
 
+enum DataConnectionProtection { clear, protected }
+
 enum SecurityType { ftp, ftps, ftpes }
 
 extension CommandListTypeEnum on ListCommand {
   String get describeEnum => toString().substring(toString().indexOf('.') + 1);
+}
+
+extension DataConnectionProtectionEnum on DataConnectionProtection {
+  String get commandValue => this == DataConnectionProtection.clear ? 'C' : 'P';
 }
