@@ -13,6 +13,8 @@ class FTPConnect {
   final String _user;
   final String _pass;
   late FTPSocket _socket;
+  FTPConnectState _state = FTPConnectState.notConnected;
+  Future<bool>? _connectFuture;
 
   /// Create a FTP Client instance
   ///
@@ -43,6 +45,8 @@ class FTPConnect {
     );
   }
 
+  FTPConnectState get state => _state;
+
   set transferMode(TransferMode pTransferMode) {
     _socket.transferMode = pTransferMode;
   }
@@ -67,11 +71,52 @@ class FTPConnect {
 
   /// Connect to the FTP Server
   /// return true if we are connected successfully
-  Future<bool> connect() => _socket.connect(_user, _pass);
+  Future<bool> connect() {
+    if (_state == FTPConnectState.connected) {
+      return Future<bool>.value(true);
+    }
+    if (_state == FTPConnectState.connecting && _connectFuture != null) {
+      return _connectFuture!;
+    }
+
+    _state = FTPConnectState.connecting;
+    _connectFuture = _socket.connect(_user, _pass).then((connected) {
+      _state = connected ? FTPConnectState.connected : FTPConnectState.notConnected;
+      return connected;
+    }, onError: (Object error, StackTrace stackTrace) {
+      _state = FTPConnectState.notConnected;
+      throw error;
+    }).whenComplete(() {
+      _connectFuture = null;
+    });
+
+    return _connectFuture!;
+  }
 
   /// Disconnect from the FTP Server
   /// return true if we are disconnected successfully
-  Future<bool> disconnect() => _socket.disconnect();
+  Future<bool> disconnect() async {
+    if (_state == FTPConnectState.connecting && _connectFuture != null) {
+      try {
+        await _connectFuture;
+      } catch (_) {
+        _state = FTPConnectState.notConnected;
+        _connectFuture = null;
+        return true;
+      }
+    }
+
+    if (_state == FTPConnectState.notConnected) {
+      return true;
+    }
+
+    try {
+      return await _socket.disconnect();
+    } finally {
+      _state = FTPConnectState.notConnected;
+      _connectFuture = null;
+    }
+  }
 
   Future<FTPReply> sendCustomCommand(String pCmd) => _socket.sendCommand(pCmd);
 
@@ -306,6 +351,8 @@ enum TransferMode { active, passive }
 enum DataConnectionProtection { clear, protected }
 
 enum SecurityType { ftp, ftps, ftpes }
+
+enum FTPConnectState { notConnected, connecting, connected }
 
 extension CommandListTypeEnum on ListCommand {
   String get describeEnum => toString().substring(toString().indexOf('.') + 1);
